@@ -1,0 +1,12 @@
+{
+  "name": "マスターズ水泳ランキング（非公式）",
+  "short_name": "ランキング",
+  "display": "standalone",
+  "start_url": ".",
+  "background_color": "#0b2e69",
+  "theme_color": "#0b2e69",
+  "icons": [
+    { "src": "static/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "static/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

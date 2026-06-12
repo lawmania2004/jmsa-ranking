@@ -1,0 +1,332 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: white;
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+header h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.last-updated {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    margin-top: 0.2rem;
+}
+
+.admin-link {
+    color: #bbdefb;
+    margin-left: 1rem;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.admin-link:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.search-form {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 65px;
+    z-index: 99;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.form-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.form-row:last-child {
+    margin-bottom: 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+}
+
+.form-group-wide {
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-group label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group select,
+.form-group input {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fafafa;
+    transition: border-color 0.2s;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #1a73e8;
+    background: white;
+}
+
+.form-group-btn {
+    justify-content: flex-end;
+}
+
+#searchBtn {
+    padding: 6px 24px;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#searchBtn:hover {
+    background: #1557b0;
+}
+
+#resultArea {
+    padding: 1rem 1.5rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    overflow-x: auto;
+}
+
+.result-info {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.ranking-table thead th {
+    background: #f0f4f8;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    border-bottom: 2px solid #dde3ea;
+    white-space: nowrap;
+}
+
+.ranking-table tbody td {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.ranking-table tbody tr:hover {
+    background: #f8fafd;
+}
+
+.ranking-table tbody tr.highlight {
+    background: #fff3cd;
+    font-weight: 700;
+}
+
+.ranking-table tbody tr.highlight:hover {
+    background: #ffe9a0;
+}
+
+.rank-cell {
+    text-align: center;
+    font-weight: 700;
+    color: #1a73e8;
+    width: 50px;
+}
+
+.rank-1 { color: #d4a017; }
+.rank-2 { color: #8a8a8a; }
+.rank-3 { color: #a0522d; }
+
+.time-cell {
+    font-family: "SF Mono", "Menlo", monospace;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+#loadMore {
+    text-align: center;
+    padding: 1rem;
+}
+
+#loadMore button {
+    padding: 8px 32px;
+    background: white;
+    border: 2px solid #1a73e8;
+    color: #1a73e8;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#loadMore button:hover {
+    background: #1a73e8;
+    color: white;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.admin-section {
+    background: white;
+    margin: 1rem 1.5rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    max-width: 1280px;
+}
+
+.admin-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.scrape-status {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.scrape-status.info { background: #e3f2fd; color: #1565c0; }
+.scrape-status.success { background: #e8f5e9; color: #2e7d32; }
+.scrape-status.error { background: #ffebee; color: #c62828; }
+
+@media (max-width: 640px) {
+    header h1 { font-size: 1.1rem; }
+
+    .search-form { padding: 0.75rem; top: 55px; }
+
+    .form-row { gap: 0.5rem; }
+
+    .form-group {
+        min-width: calc(50% - 0.25rem);
+        flex: 1 1 calc(50% - 0.25rem);
+    }
+
+    .form-group-wide {
+        min-width: 100%;
+        flex-basis: 100%;
+    }
+
+    .form-group-btn {
+        min-width: 100%;
+        flex-basis: 100%;
+    }
+
+    #searchBtn { width: 100%; }
+
+    #resultArea { padding: 0.75rem; }
+
+    .ranking-table thead th,
+    .ranking-table tbody td {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+
+    .rank-cell { width: 36px; }
+}
+
+.notes-area {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: #fffde7;
+    border: 1px solid #f0e6b0;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.notes-title {
+    font-weight: 600;
+    color: #9a8700;
+    margin-bottom: 0.3rem;
+}
+
+.note-line {
+    margin: 2px 0;
+}
+
+.badge-cell {
+    text-align: center;
+    width: 64px;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+.jp-badge {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.jp-new {
+    background: #d32f2f;
+    color: white;
+}
+
+.jp-tie {
+    background: #f57f17;
+    color: white;
+}

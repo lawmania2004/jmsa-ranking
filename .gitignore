@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+logs/
+db/ranking.db
+db/ranking.db-shm
+db/ranking.db-wal
+.DS_Store
+.ntfy_topic
+.my_name

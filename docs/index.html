@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本マスターズ水泳 ランキング（非公式）</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="static/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="static/icons/favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-title" content="ランキング">
+    <meta name="theme-color" content="#0b2e69">
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>日本マスターズ水泳 ランキング（非公式）</h1>
+        <p class="last-updated">
+            <span id="lastUpdated">読み込み中...</span>
+            <a href="#" class="admin-link" onclick="setMyName(); return false;">★マイ選手設定</a>
+        </p>
+    </header>
+
+    <div class="search-form" id="searchForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label>年度</label>
+                <select id="year"></select>
+            </div>
+            <div class="form-group">
+                <label>コース種別</label>
+                <select id="courseType">
+                    <option value="SCM">短水路 (SCM)</option>
+                    <option value="LCM">長水路 (LCM)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>性別</label>
+                <select id="gender">
+                    <option value="M">男子</option>
+                    <option value="F">女子</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>年齢区分</label>
+                <select id="ageGroup"></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group form-group-wide">
+                <label>種目</label>
+                <select id="event"></select>
+            </div>
+            <div class="form-group">
+                <label>選手名検索</label>
+                <input type="text" id="athleteName" placeholder="選手名（部分一致）">
+            </div>
+            <div class="form-group form-group-btn">
+                <button id="searchBtn" onclick="searchRanking()">検索</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultArea">
+        <div id="resultInfo" class="result-info"></div>
+        <table id="rankingTable" class="ranking-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th>選手名</th>
+                    <th>所属クラブ</th>
+                    <th>タイム</th>
+                    <th>大会名</th>
+                    <th>大会日</th>
+                </tr>
+            </thead>
+            <tbody id="rankingBody"></tbody>
+        </table>
+        <div id="loadMore" style="display:none;">
+            <button onclick="loadMore()">もっと見る</button>
+        </div>
+        <div id="loading" class="loading" style="display:none;">読み込み中...</div>
+        <div id="notesArea" class="notes-area"></div>
+    </div>
+
+    <script src="static/js/app.js"></script>
+</body>
+</html>

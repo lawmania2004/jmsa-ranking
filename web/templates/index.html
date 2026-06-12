@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本マスターズ水泳 ランキング（非公式）</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>日本マスターズ水泳 ランキング（非公式）</h1>
+        <p class="last-updated">
+            最終更新: {{ last_updated or "未取得" }}
+            <a href="/admin" class="admin-link">管理</a>
+        </p>
+    </header>
+
+    <div class="search-form" id="searchForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label>年度</label>
+                <select id="year">
+                    <option value="2026">2026年</option>
+                    <option value="2025">2025年</option>
+                    <option value="all">全期間</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>コース種別</label>
+                <select id="courseType">
+                    <option value="SCM">短水路 (SCM)</option>
+                    <option value="LCM">長水路 (LCM)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>性別</label>
+                <select id="gender">
+                    <option value="M">男子</option>
+                    <option value="F">女子</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>年齢区分</label>
+                <select id="ageGroup">
+                    {% for age in age_groups %}
+                    <option value="{{ age }}" {% if age == 40 %}selected{% endif %}>{{ age }}歳区分</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group form-group-wide">
+                <label>種目</label>
+                <select id="event">
+                    {% for ev in events_scm %}
+                    <option value="{{ ev }}">{{ ev }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>選手名検索</label>
+                <input type="text" id="athleteName" placeholder="選手名（部分一致）">
+            </div>
+            <div class="form-group form-group-btn">
+                <button id="searchBtn" onclick="searchRanking()">検索</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultArea">
+        <div id="resultInfo" class="result-info"></div>
+        <table id="rankingTable" class="ranking-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th>選手名</th>
+                    <th>所属クラブ</th>
+                    <th>タイム</th>
+                    <th>大会名</th>
+                    <th>大会日</th>
+                </tr>
+            </thead>
+            <tbody id="rankingBody"></tbody>
+        </table>
+        <div id="loadMore" style="display:none;">
+            <button onclick="loadMore()">もっと見る</button>
+        </div>
+        <div id="loading" class="loading" style="display:none;">読み込み中...</div>
+        {% if meeting_notes or pending_meets %}
+        <div class="notes-area">
+            <div class="notes-title">集計に関する注意</div>
+            {% for n in meeting_notes %}
+            <div class="note-line">※ {{ n.name }}（{{ n.date }}）: {{ n.note }}</div>
+            {% endfor %}
+            {% for p in pending_meets %}
+            <div class="note-line">※ {{ p.title }}（{{ p.start }}）: 未集計（結果待ち・手動確認中）</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const MY_NAME = "{{ my_name }}";
+        const EVENTS_SCM = {{ events_scm | tojson }};
+        const EVENTS_LCM = {{ events_lcm | tojson }};
+    </script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

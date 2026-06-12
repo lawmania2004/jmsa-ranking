@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JMSA ランキング - 管理</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>管理ページ</h1>
+        <p class="last-updated">
+            最終更新: {{ last_updated or "未取得" }}
+            <a href="/" class="admin-link">ランキングへ戻る</a>
+        </p>
+    </header>
+
+    <div class="admin-section">
+        <h2>大会単位でスクレイピング</h2>
+        <p style="color:#666; font-size:0.85rem; margin-bottom:0.75rem;">
+            自動スクレイピングは現在停止中。手動で大会IDを指定して取得します。<br>
+            公認大会IDは <a href="https://tdsystem.co.jp/Masters/mi2026.php" target="_blank">公認大会一覧</a>、
+            主催大会IDは <a href="https://tdsystem.co.jp/JMSA/SCM2026.html" target="_blank">主催大会一覧</a> のG値です。
+        </p>
+        <div class="form-row">
+            <div class="form-group">
+                <label>年度</label>
+                <select id="scrapeYear">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>大会種別</label>
+                <select id="meetSource">
+                    <option value="主催">主催大会 (SCM/LCM)</option>
+                    <option value="公認">公認大会 (Masters)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>大会ID (G)</label>
+                <input type="number" id="scrapeMeetId" placeholder="例: 39">
+            </div>
+            <div class="form-group">
+                <label>性別</label>
+                <select id="scrapeGender">
+                    <option value="M">男子</option>
+                    <option value="F">女子</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>年齢区分</label>
+                <select id="scrapeAge">
+                    <option value="40">40歳区分</option>
+                    <option value="18">18歳区分</option>
+                    <option value="25">25歳区分</option>
+                    <option value="30">30歳区分</option>
+                    <option value="35">35歳区分</option>
+                    <option value="45">45歳区分</option>
+                    <option value="50">50歳区分</option>
+                    <option value="55">55歳区分</option>
+                    <option value="60">60歳区分</option>
+                    <option value="65">65歳区分</option>
+                    <option value="70">70歳区分</option>
+                    <option value="75">75歳区分</option>
+                    <option value="80">80歳区分</option>
+                    <option value="85">85歳区分</option>
+                    <option value="90">90歳区分</option>
+                </select>
+            </div>
+            <div class="form-group form-group-btn">
+                <button id="scrapeBtn" onclick="startScrape()">スクレイピング開始</button>
+            </div>
+        </div>
+        <div id="scrapeStatus" class="scrape-status"></div>
+    </div>
+
+    <div class="admin-section">
+        <h2>取得済み大会一覧</h2>
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>大会名</th>
+                    <th>コース種別</th>
+                    <th>取得日時</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in meetings %}
+                <tr>
+                    <td>{{ m.name }}</td>
+                    <td>{{ m.course_type }}</td>
+                    <td>{{ m.scraped_at }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">まだデータがありません</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+    async function startScrape() {
+        const year = document.getElementById('scrapeYear').value;
+        const meetId = document.getElementById('scrapeMeetId').value;
+        const gender = document.getElementById('scrapeGender').value;
+        const age = document.getElementById('scrapeAge').value;
+        const btn = document.getElementById('scrapeBtn');
+        const status = document.getElementById('scrapeStatus');
+
+        if (!meetId) {
+            status.textContent = '大会IDを入力してください';
+            status.className = 'scrape-status error';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '実行中...';
+        status.textContent = `${year}年 大会ID=${meetId} ${gender === 'M' ? '男子' : '女子'} ${age}歳区分 を取得中...`;
+        status.className = 'scrape-status info';
+
+        try {
+            const resp = await fetch('/admin/scrape_meet', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    year: parseInt(year),
+                    meet_id: parseInt(meetId),
+                    gender: gender,
+                    age: parseInt(age),
+                    meet_source: document.getElementById('meetSource').value,
+                })
+            });
+            const data = await resp.json();
+            status.textContent = data.message;
+            status.className = 'scrape-status ' + (data.status === 'ok' ? 'success' : 'error');
+            if (data.status === 'ok') {
+                setTimeout(() => location.reload(), 2000);
+            }
+        } catch (e) {
+            status.textContent = 'エラーが発生しました: ' + e.message;
+            status.className = 'scrape-status error';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'スクレイピング開始';
+        }
+    }
+    </script>
+</body>
+</html>
