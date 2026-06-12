@@ -19,7 +19,7 @@ from config import (
 )
 from database import (
     init_db, get_ranking, get_ranking_count, get_last_updated, get_meetings,
-    get_meeting_notes, get_japan_record,
+    get_meeting_notes, get_japan_record, get_athlete_summary,
 )
 
 app = FastAPI(title="JMSA Ranking")
@@ -90,6 +90,30 @@ async def api_ranking(
         "offset": offset,
         "japan_record": record,
     })
+
+
+@app.get("/api/athlete")
+async def api_athlete(
+    course: str = Query(...),
+    gender: str = Query(...),
+    age_group: str = Query(...),
+    athlete: str = Query(...),
+    year: str = Query(None),
+):
+    year_param = year if year and year != "all" else None
+    rows = get_athlete_summary(course, gender, age_group, athlete, year_param)
+
+    # 種目を表示順(config定義順)に並べる
+    events_order = EVENTS_SCM if course == "SCM" else EVENTS_LCM
+    order = {ev: i for i, ev in enumerate(events_order)}
+    rows.sort(key=lambda r: (r["athlete_name"], order.get(r["event"], 999)))
+
+    for r in rows:
+        rec = get_japan_record(r["event"], course, gender, age_group)
+        r["is_jp_new"] = bool(rec and r["time_seconds"] < rec["time_seconds"] - 0.005)
+        r["is_jp_tie"] = bool(rec and abs(r["time_seconds"] - rec["time_seconds"]) <= 0.005)
+
+    return JSONResponse({"results": rows})
 
 
 @app.get("/api/events")

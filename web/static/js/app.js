@@ -42,6 +42,86 @@ function loadMore() {
     fetchRanking(true);
 }
 
+function setTableHead(mode) {
+    const thead = document.querySelector("#rankingTable thead tr");
+    if (mode === "athlete") {
+        thead.innerHTML =
+            "<th>種目</th><th>順位</th><th>タイム</th><th>大会名</th><th>大会日</th>";
+    } else {
+        thead.innerHTML =
+            "<th>順位</th><th>選手名</th><th>所属クラブ</th><th>タイム</th><th>大会名</th><th>大会日</th>";
+    }
+}
+
+async function fetchAthleteSummary(course, gender, ageGroup, athlete, year) {
+    const table = document.getElementById("rankingTable");
+    const tbody = document.getElementById("rankingBody");
+    const info = document.getElementById("resultInfo");
+    const loading = document.getElementById("loading");
+    document.getElementById("loadMore").style.display = "none";
+
+    const params = new URLSearchParams({
+        course: course, gender: gender, age_group: ageGroup,
+        athlete: athlete, year: year,
+    });
+    try {
+        const resp = await fetch("/api/athlete?" + params.toString());
+        const data = await resp.json();
+        const rows = data.results;
+
+        tbody.innerHTML = "";
+        if (!rows.length) {
+            info.textContent = "該当するデータがありません";
+            table.style.display = "none";
+            return;
+        }
+
+        const genderLabel = gender === "M" ? "男子" : "女子";
+        const courseLabel = course === "SCM" ? "短水路" : "長水路";
+        const yearLabel = year === "all" ? "全期間" : year + "年度";
+        const names = [];
+        rows.forEach(function (r) {
+            if (names.indexOf(r.athlete_name) === -1) names.push(r.athlete_name);
+        });
+        info.textContent =
+            yearLabel + " " + courseLabel + " " + genderLabel + " " + ageGroup +
+            "歳区分 「" + athlete + "」 — " + names.length + "選手";
+
+        setTableHead("athlete");
+        let curName = null;
+        rows.forEach(function (r) {
+            if (r.athlete_name !== curName) {
+                curName = r.athlete_name;
+                const count = rows.filter(function (o) { return o.athlete_name === curName; }).length;
+                const headTr = document.createElement("tr");
+                headTr.innerHTML =
+                    '<td colspan="5" class="athlete-head">' + escapeHtml(r.athlete_name) +
+                    (r.club ? "　" + escapeHtml(r.club) : "") +
+                    "（" + count + "種目）</td>";
+                tbody.appendChild(headTr);
+            }
+            let badge = "";
+            if (r.is_jp_new) badge = '<span class="jp-badge jp-new">日本新</span>';
+            else if (r.is_jp_tie) badge = '<span class="jp-badge jp-tie">日本タイ</span>';
+            const rankClass =
+                r.rank === 1 ? "rank-1" : r.rank === 2 ? "rank-2" : r.rank === 3 ? "rank-3" : "";
+            const tr = document.createElement("tr");
+            tr.innerHTML =
+                "<td>" + escapeHtml(r.event) + "</td>" +
+                '<td class="rank-cell ' + rankClass + '">' + r.rank + "位/" + r.total + "人</td>" +
+                '<td class="time-cell">' + escapeHtml(r.time_display) + badge + "</td>" +
+                "<td>" + escapeHtml(r.meeting_name || "") + "</td>" +
+                "<td>" + escapeHtml(r.meeting_date || "") + "</td>";
+            tbody.appendChild(tr);
+        });
+        table.style.display = "table";
+    } catch (e) {
+        info.textContent = "エラーが発生しました: " + e.message;
+    } finally {
+        loading.style.display = "none";
+    }
+}
+
 async function fetchRanking(append) {
     const event = document.getElementById("event").value;
     const course = document.getElementById("courseType").value;
@@ -52,6 +132,12 @@ async function fetchRanking(append) {
 
     const agePrefix = gender === "M" ? "M" : "W";
     const ageGroup = agePrefix + ageVal;
+
+    if (athlete) {
+        document.getElementById("loading").style.display = "block";
+        await fetchAthleteSummary(course, gender, ageGroup, athlete, year);
+        return;
+    }
 
     const loading = document.getElementById("loading");
     const table = document.getElementById("rankingTable");
@@ -83,6 +169,7 @@ async function fetchRanking(append) {
 
         if (!append) {
             tbody.innerHTML = "";
+            setTableHead("ranking");
         }
 
         if (results.length === 0 && !append) {

@@ -58,6 +58,50 @@ def init_db():
     conn.close()
 
 
+def get_athlete_summary(course_type, gender, age_group, athlete_name, year=None):
+    """選手名(部分一致)に該当する選手の全種目サマリ。
+
+    各種目について、その選手のベストタイム・種目内順位(同タイムは同順位)・
+    種目内人数・大会情報を返す。
+    """
+    conn = get_connection()
+    where = "r.course_type = ? AND r.gender = ? AND r.age_group = ?"
+    params = [course_type, gender, age_group]
+    if year:
+        where += " AND strftime('%Y', m.date) = ?"
+        params.append(str(year))
+
+    query = f"""
+        WITH filtered AS (
+            SELECT r.athlete_name, r.event, r.club, r.time_seconds, r.time_display,
+                   r.venue, m.name AS meeting_name, m.date AS meeting_date,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY r.athlete_name, r.event
+                       ORDER BY r.time_seconds ASC
+                   ) AS rn
+            FROM results r
+            JOIN meetings m ON r.meeting_id = m.id
+            WHERE {where}
+        ),
+        bests AS (
+            SELECT *,
+                   RANK() OVER (PARTITION BY event ORDER BY time_seconds ASC) AS rank,
+                   COUNT(*) OVER (PARTITION BY event) AS total
+            FROM filtered WHERE rn = 1
+        )
+        SELECT athlete_name, event, club, time_seconds, time_display,
+               meeting_name, meeting_date, venue, rank, total
+        FROM bests
+        WHERE REPLACE(REPLACE(athlete_name, '　', ''), ' ', '') LIKE ?
+        ORDER BY athlete_name
+    """
+    import re as _re
+    params.append("%" + _re.sub(r"\s+", "", athlete_name) + "%")
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
 def get_japan_record(event, course_type, gender, age_group):
     """該当条件の日本記録を返す (japan_recordsテーブル未作成なら None)"""
     conn = get_connection()
