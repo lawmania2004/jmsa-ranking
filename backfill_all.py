@@ -89,12 +89,16 @@ def notify(title, message):
     import requests
     try:
         requests.post(
-            f"https://ntfy.sh/{NTFY_TOPIC}",
-            data=message.encode("utf-8"),
-            headers={"Title": title, "Tags": "swimmer"},
+            "https://ntfy.sh",
+            json={
+                "topic": NTFY_TOPIC,
+                "title": title,
+                "message": message,
+                "tags": ["swimmer"],
+            },
             timeout=15,
         )
-    except requests.RequestException as e:
+    except Exception as e:
         logger.error(f"ntfy送信失敗: {e}")
 
 

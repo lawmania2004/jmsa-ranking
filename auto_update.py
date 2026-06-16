@@ -165,14 +165,20 @@ def notify(title, message):
         return
     import requests
     try:
+        # JSON publish APIを使う(タイトル・本文をUTF-8で安全に送る。
+        # ヘッダ方式だと日本語がlatin-1エンコードできずクラッシュするため)
         requests.post(
-            f"https://ntfy.sh/{NTFY_TOPIC}",
-            data=message.encode("utf-8"),
-            headers={"Title": title, "Tags": "swimmer"},
+            "https://ntfy.sh",
+            json={
+                "topic": NTFY_TOPIC,
+                "title": title,
+                "message": message,
+                "tags": ["swimmer"],
+            },
             timeout=15,
         )
         logger.info("ntfy通知を送信しました")
-    except requests.RequestException as e:
+    except Exception as e:
         logger.error(f"ntfy通知の送信に失敗: {e}")
 
 
@@ -269,7 +275,11 @@ def publish_static():
             ["git", "commit", "-m", f"自動更新 {datetime.now().strftime('%Y-%m-%d')}"],
             check=True, capture_output=True, cwd=BASE_DIR,
         )
-        subprocess.run(["git", "push"], check=True, capture_output=True, cwd=BASE_DIR)
+        # 上流追跡が外れていてもpushできるよう明示的にorigin mainを指定
+        subprocess.run(
+            ["git", "push", "origin", "HEAD:main"],
+            check=True, capture_output=True, cwd=BASE_DIR,
+        )
         logger.info("静的サイトをpushしました")
     except subprocess.CalledProcessError as e:
         logger.error(f"静的サイト公開に失敗: {e}\n{getattr(e, 'stderr', '')}")
