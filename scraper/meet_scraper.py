@@ -57,14 +57,20 @@ STROKE_MAP = {
 
 
 def fetch(url, params=None):
-    try:
-        resp = SESSION.get(url, params=params, timeout=30)
-        resp.encoding = resp.apparent_encoding
-        resp.raise_for_status()
-        return resp.text
-    except requests.RequestException as e:
-        logger.error(f"Failed to fetch {url}: {e}")
-        return None
+    """1回リトライ付きfetch(長時間実行中の接続リセット対策)"""
+    for attempt in (1, 2):
+        try:
+            resp = SESSION.get(url, params=params, timeout=30)
+            resp.encoding = resp.apparent_encoding
+            resp.raise_for_status()
+            return resp.text
+        except requests.RequestException as e:
+            if attempt == 1:
+                logger.warning(f"Fetch retry ({e}): {url}")
+                time.sleep(5)
+            else:
+                logger.error(f"Failed to fetch {url}: {e}")
+    return None
 
 
 def parse_meet_list(html):
