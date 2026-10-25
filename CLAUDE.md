@@ -13,7 +13,7 @@ tdsystem.co.jp等から試合結果をスクレイピングし、SQLiteに蓄積
 
 - `auto_update.py` が launchd（`com.jmsa.ranking.autoupdate.plist`、**毎週日曜 22:00**）で実行される。予定時刻にMacがスリープ/電源オフなら、次に起動した時に1回だけ遅延実行される（launchd仕様）
 - LLM・Claudeトークンを一切使わない純Pythonスクリプト。**この方針を維持する（トークン消費ゼロがユーザーの要件）**
-- 処理: 主催大会+公認大会の差分スクレイピング（`scrape_meet_all` で**全性別×全年齢区分**）→ 日本記録PDFの新版チェック → 公式スケジュール突合でPDF配布のみの大会を「手動確認要」として検出 → generate_static.py → `git push origin HEAD:main` → ntfyでiPhone通知（コミットメッセージ「自動更新 YYYY-MM-DD」）
+- 処理: 主催大会（短水路一覧 `JMSA/SCM{年}.html` ＋単独ページ `JMSA/JM{年}.html`=ジャパンマスターズ・`LD{年}.html`=長距離）+公認大会の差分スクレイピング（`scrape_meet_all` で**全性別×全年齢区分**）→ 日本記録PDFの新版チェック → 公式スケジュール突合でPDF配布のみの大会を「手動確認要」として検出 → generate_static.py → `git push origin HEAD:main` → ntfyでiPhone通知（コミットメッセージ「自動更新 YYYY-MM-DD」）
 - ログ: `logs/`。手動テスト: `python3 auto_update.py --dry-run`
 
 ## 主な機能

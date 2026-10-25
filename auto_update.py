@@ -2,8 +2,8 @@
 """毎週月曜深夜にlaunchdから実行される自動差分更新スクリプト。
 
 処理内容 (LLM・Claudeトークンは一切使わない純Pythonスクリプト):
-1. 主催大会一覧 (JMSA/SCM{year}.html) から開催済み・未登録の大会を検出して
-   M40/M45男子をスクレイピング・登録
+1. 主催大会一覧 (JMSA/SCM{year}.html) と単独主催ページ (JMSA/JM{year}.html,
+   LD{year}.html) から開催済み・未登録の大会を検出してスクレイピング・登録
 2. 公認大会一覧 (Masters/mi{year}.php) も同様に処理
 3. JMSA公式スケジュール (masters-swim.or.jp/schedule10.php) と突き合わせて、
    tdsystemに結果がない公認大会(PDF配布など)を「手動確認が必要」として検出
@@ -53,7 +53,9 @@ def jmsa_date_iso(year, meet):
 
 def find_new_meets(year, today_iso):
     """両一覧ページから開催済み・未登録の大会を検出"""
-    from meet_scraper import fetch, parse_jmsa_meet_list, parse_meet_list, parse_meet_date, BASE
+    from meet_scraper import (
+        fetch, parse_jmsa_meet_list, fetch_jmsa_single_meets, parse_meet_list, parse_meet_date, BASE,
+    )
     from database import get_connection
 
     conn = get_connection()
@@ -73,6 +75,12 @@ def find_new_meets(year, today_iso):
                 new_meets.append(("主催", int(m["meet_id"]), m["name"], date_iso))
     else:
         logger.error("主催大会一覧の取得に失敗")
+
+    # ジャパンマスターズ・長距離大会は SCM{year}.html に載らない単独ページ
+    for m in fetch_jmsa_single_meets(year):
+        date_iso = jmsa_date_iso(year, m)
+        if date_iso <= today_iso and (m["name"], date_iso, m["course_type"]) not in known:
+            new_meets.append(("主催", int(m["meet_id"]), m["name"], date_iso))
 
     html = fetch(f"{BASE}/Masters/mi{year}.php")
     if html:

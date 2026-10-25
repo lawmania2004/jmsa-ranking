@@ -341,6 +341,51 @@ def parse_jmsa_meet_list(html):
     return meets
 
 
+# 短水路大会一覧(SCM{year}.html)に載らない、単独ページの主催大会
+# JM=ジャパンマスターズ, LD=長距離大会
+JMSA_SINGLE_PAGES = ("JM", "LD")
+
+
+def parse_jmsa_single_meet(html):
+    """単独主催大会ページ (JM2026.html等) から parse_jmsa_meet_list と同形式の大会情報を取得。
+
+    ページ冒頭に「大会名<BR>会場(50m)<BR>2026年10月8日(木)～10月12日(月)<BR>」があり、
+    フォームの hidden input に G(大会ID) が入っている
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    g_input = soup.find("input", {"name": "G"})
+    m = re.search(r"</form>\s*(.+?)<br>\s*(.+?)<br>\s*(.+?)<br>", html, re.I | re.S)
+    if not g_input or not g_input.get("value") or not m:
+        return None
+    name, facility, date_text = (s.strip() for s in m.groups())
+    dm = re.search(r"\d{4}年(\d+)月(.+)", date_text)
+    if not dm:
+        return None
+    return {
+        "meet_id": str(g_input["value"]),
+        "month": int(dm.group(1)),
+        "date_str": dm.group(2),
+        "name": name,
+        "venue": facility,
+        "course_type": "LCM" if "50m" in facility.lower() else "SCM",
+    }
+
+
+def fetch_jmsa_single_meets(year):
+    """JMSA_SINGLE_PAGES の各ページから大会情報を取得 (未公開のページは飛ばす)"""
+    meets = []
+    for prefix in JMSA_SINGLE_PAGES:
+        html = fetch(f"{BASE}/JMSA/{prefix}{year}.html")
+        if not html:
+            continue
+        meet = parse_jmsa_single_meet(html)
+        if meet:
+            meets.append(meet)
+        else:
+            logger.warning(f"JMSA/{prefix}{year}.html の大会情報を解析できません")
+    return meets
+
+
 def _age_text_filter(age_filter):
     """区分カラム照合用テキスト。18歳区分のみ18～24歳の7年バンド"""
     if age_filter == 18:
@@ -406,7 +451,11 @@ def _resolve_target(year, meet_id, source, course_type=None):
         meets = parse_jmsa_meet_list(html)
         target = next((m for m in meets if m["meet_id"] == str(meet_id)), None)
         if not target:
-            logger.error(f"Meet G={meet_id} not found in JMSA SCM{year}.html")
+            target = next(
+                (m for m in fetch_jmsa_single_meets(year) if m["meet_id"] == str(meet_id)), None
+            )
+        if not target:
+            logger.error(f"Meet G={meet_id} not found in JMSA SCM{year}.html / 単独主催ページ")
             return None, None
         target["year"] = year
         month = target.get("month", 1)
